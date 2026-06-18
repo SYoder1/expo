@@ -231,6 +231,39 @@ export function getItem(key: string, options: SecureStoreOptions = {}): string |
   return ExpoSecureStore.getValueWithKeySync(key, options);
 }
 
+// @needsAudit
+/**
+ * Checks whether a value is stored under the provided key, without triggering a biometric
+ * prompt even if the entry was saved with `requireAuthentication` enabled.
+ *
+ * @param key The key that was used to store the associated value.
+ * @param options An [`SecureStoreOptions`](#securestoreoptions) object.
+ *
+ * @return A promise that resolves to `true` if a value is stored under the given key, and `false` otherwise.
+ */
+export async function hasItemAsync(
+  key: string,
+  options: SecureStoreOptions = {}
+): Promise<boolean> {
+  ensureValidKey(key);
+  return await ExpoSecureStore.hasValueWithKeyAsync(key, options);
+}
+
+// @needsAudit
+/**
+ * Synchronously checks whether a value is stored under the provided key, without triggering a
+ * biometric prompt even if the entry was saved with `requireAuthentication` enabled.
+ *
+ * @param key The key that was used to store the associated value.
+ * @param options An [`SecureStoreOptions`](#securestoreoptions) object.
+ *
+ * @return `true` if a value is stored under the given key, and `false` otherwise.
+ */
+export function hasItem(key: string, options: SecureStoreOptions = {}): boolean {
+  ensureValidKey(key);
+  return ExpoSecureStore.hasValueWithKeySync(key, options);
+}
+
 /**
  * Checks if the value can be saved with `requireAuthentication` option enabled.
  * @return `true` if the device supports biometric authentication and the enrolled method is sufficiently secure. Otherwise, returns `false`. Always returns false on tvOS.

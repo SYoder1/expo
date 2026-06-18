@@ -6,6 +6,8 @@
 
 ### 🎉 New features
 
+- Add `hasItemAsync` to check whether a key is stored without triggering a biometric or device credential prompt. ([#PR](url) by [@SYoder1](https://github.com/SYoder1))
+
 ### 🐛 Bug fixes
 
 ### 💡 Others

@@ -31,6 +31,24 @@ it(`deletes values`, async () => {
   expect(ExpoSecureStore.deleteValueWithKeyAsync).toHaveBeenCalledWith('key', options);
 });
 
+it(`has key`, async () => {
+  ExpoSecureStore.hasValueWithKeyAsync.mockImplementation(async () => true);
+
+  const options = { keychainService: 'test' };
+  const result = await SecureStore.hasItemAsync('key', options);
+  expect(result).toBe(true);
+  expect(ExpoSecureStore.hasValueWithKeyAsync).toHaveBeenCalledWith('key', options);
+});
+
+it(`has key synchronously`, () => {
+  ExpoSecureStore.hasValueWithKeySync.mockImplementation(() => true);
+
+  const options = { keychainService: 'test' };
+  const result = SecureStore.hasItem('key', options);
+  expect(result).toBe(true);
+  expect(ExpoSecureStore.hasValueWithKeySync).toHaveBeenCalledWith('key', options);
+});
+
 it(`checks for invalid keys`, async () => {
   ExpoSecureStore.getValueWithKeyAsync.mockImplementation(async () => `unexpected value`);
 
@@ -50,4 +68,14 @@ it(`checks for invalid values`, async () => {
   await expect(SecureStore.setItemAsync('key', (() => {}) as any)).rejects.toMatchSnapshot();
 
   expect(ExpoSecureStore.setValueWithKeyAsync).not.toHaveBeenCalled();
+});
+
+it(`checks for invalid keys when checking existence`, async () => {
+  await expect(SecureStore.hasItemAsync(null as any)).rejects.toMatchSnapshot();
+  await expect(SecureStore.hasItemAsync(true as any)).rejects.toMatchSnapshot();
+  await expect(SecureStore.hasItemAsync({} as any)).rejects.toMatchSnapshot();
+  await expect(SecureStore.hasItemAsync((() => {}) as any)).rejects.toMatchSnapshot();
+  await expect(SecureStore.hasItemAsync('@')).rejects.toMatchSnapshot();
+
+  expect(ExpoSecureStore.hasValueWithKeyAsync).not.toHaveBeenCalled();
 });

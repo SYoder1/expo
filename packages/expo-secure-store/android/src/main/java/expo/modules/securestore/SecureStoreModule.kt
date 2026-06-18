@@ -56,6 +56,14 @@ open class SecureStoreModule : Module() {
       }
     }
 
+    AsyncFunction("hasValueWithKeyAsync") { key: String, options: SecureStoreOptions ->
+      return@AsyncFunction hasItemImpl(key, options)
+    }
+
+    Function("hasValueWithKeySync") { key: String, options: SecureStoreOptions ->
+      return@Function hasItemImpl(key, options)
+    }
+
     AsyncFunction("deleteValueWithKeyAsync") { key: String, options: SecureStoreOptions ->
       try {
         deleteItemImpl(key, options)
@@ -96,6 +104,12 @@ open class SecureStoreModule : Module() {
       return readJSONEncodedItem(key, prefs, options)
     }
     return null
+  }
+
+  private fun hasItemImpl(key: String, options: SecureStoreOptions): Boolean {
+    val prefs: SharedPreferences = getSharedPreferences()
+    val keychainAwareKey = createKeychainAwareKey(key, options.keychainService)
+    return prefs.contains(keychainAwareKey) || prefs.contains(key)
   }
 
   private suspend fun readJSONEncodedItem(key: String, prefs: SharedPreferences, options: SecureStoreOptions): String? {

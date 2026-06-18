@@ -40,6 +40,14 @@ public final class SecureStoreModule: Module {
       return try set(value: value, with: key, options: options)
     }
 
+    AsyncFunction("hasValueWithKeyAsync") { (key: String, options: SecureStoreOptions) -> Bool in
+      return try hasValue(with: key, options: options)
+    }
+
+    Function("hasValueWithKeySync") { (key: String, options: SecureStoreOptions) -> Bool in
+      return try hasValue(with: key, options: options)
+    }
+
     AsyncFunction("deleteValueWithKeyAsync") { (key: String, options: SecureStoreOptions) in
       let noAuthSearchDictionary = query(with: key, options: options, requireAuthentication: false)
       let authSearchDictionary = query(with: key, options: options, requireAuthentication: true)
@@ -84,6 +92,41 @@ public final class SecureStoreModule: Module {
     }
 
     return nil
+  }
+
+  private func hasValue(with key: String, options: SecureStoreOptions) throws -> Bool {
+    guard let key = validate(for: key) else {
+      throw InvalidKeyException()
+    }
+
+    if try itemExists(with: key, options: options, requireAuthentication: false) {
+      return true
+    }
+
+    if try itemExists(with: key, options: options, requireAuthentication: true) {
+      return true
+    }
+
+    return try itemExists(with: key, options: options)
+  }
+
+  private func itemExists(with key: String, options: SecureStoreOptions, requireAuthentication: Bool? = nil) throws -> Bool {
+    var query = query(with: key, options: options, requireAuthentication: requireAuthentication)
+    query[kSecUseAuthenticationUI as String] = kSecUseAuthenticationUISkip
+
+    let status = SecItemCopyMatching(query as CFDictionary, nil)
+
+    switch status {
+    case errSecSuccess:
+      return true
+    case errSecItemNotFound:
+      return false
+    case errSecInteractionNotAllowed:
+      // The entry exists but reading it would require presenting an authentication prompt.
+      return true
+    default:
+      throw KeyChainException(status)
+    }
   }
 
   private func set(value: String, with key: String, options: SecureStoreOptions) throws -> Bool {
